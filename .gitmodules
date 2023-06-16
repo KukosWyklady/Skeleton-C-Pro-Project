@@ -1,3 +1,6 @@
 [submodule "submodules/c-logger"]
 	path = submodules/c-logger
 	url = https://github.com/yksz/c-logger
+[submodule "submodules/criterion"]
+	path = submodules/criterion
+	url = https://github.com/Snaipe/Criterion

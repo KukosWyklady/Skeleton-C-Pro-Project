@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# Submodule: https://github.com/yksz/c-logger
+
 # Full script path
 script_path=`readlink -f "${BASH_SOURCE[0]}" 2>/dev/null||echo $0`
 
@@ -7,9 +11,6 @@ script_dir=`dirname "${script_path}"`
 clogger_dest_dir="${script_dir}/../libs/c-logger"
 mkdir -p ${clogger_dest_dir}
 clogger_dir="${script_dir}/../submodules/c-logger"
-
-echo ${clogger_dir}
-echo ${clogger_dest_dir}
 
 cd ${clogger_dir}
 mkdir -p build

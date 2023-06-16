@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Full script path
 script_path=`readlink -f "${BASH_SOURCE[0]}" 2>/dev/null||echo $0`
 
@@ -22,3 +24,8 @@ cd ${project_dir} &&  git submodule update
 info "Installing C-logger if needed ..."
 ${script_dir}/install_c-logger.sh || error "C-logger installation error"
 success "C-logger installed"
+
+# Install Criterion lib from submodules
+info "Installing Criterion if needed ..."
+${script_dir}/install_criterion.sh || error "Criterion installation error"
+success "Criterion installed"
