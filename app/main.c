@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include <compiler/compiler.h>
 #include <logger.h>
 
 int main(void)
@@ -18,6 +19,9 @@ int main(void)
     LOG_WARN("warn");
     LOG_ERROR("error");
     LOG_FATAL("fatal");
+
+    if (EXPECT(MIN(2, 3), 2))
+        printf("EXPECTED 2\n");
 
     return 0;
 }
