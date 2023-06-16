@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <compiler/compiler.h>
+#include <error.h>
 #include <logger.h>
 
 int main(void)
@@ -22,6 +23,10 @@ int main(void)
 
     if (EXPECT(MIN(2, 3), 2))
         printf("EXPECTED 2\n");
+
+    const error_t err = ERROR_INVALID_ARGUMENT;
+    if (err == ERROR_INVALID_ARGUMENT)
+        printf("Invalid argument error test\n");
 
     return 0;
 }
