@@ -4,6 +4,9 @@
 #include <error.h>
 #include <logger.h>
 
+#include <foo.h>
+
+
 int main(void)
 {
     printf("MAIN\n");
@@ -27,6 +30,16 @@ int main(void)
     const error_t err = ERROR_INVALID_ARGUMENT;
     if (err == ERROR_INVALID_ARGUMENT)
         printf("Invalid argument error test\n");
+
+    int* buf;
+    if (foo_alloc_buffer(100, &buf) != ERROR_NO_ERROR)
+        printf("ERROR\n");
+
+    if (foo_init_buffer(buf, 100, 1, 2) != ERROR_NO_ERROR)
+        printf("ERROR\n");
+
+    if (foo_dealloc_buffer(buf) != ERROR_NO_ERROR)
+        printf("ERROR\n");
 
     return 0;
 }
