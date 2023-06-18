@@ -1,5 +1,6 @@
 #include <foo.h>
 #include <logger.h>
+#include <bar.h>
 
 #include <stdlib.h>
 
@@ -48,7 +49,8 @@ error_t foo_init_buffer(int buf[const], const size_t num_entries, const int star
         return ERROR_INVALID_ARGUMENT;
     }
 
-    foo_static_fill_buffer(buf, num_entries, start_value, add_value);
+    register const int fill_start_value = start_value < 0 ? bar_magic_number() : start_value;
+    foo_static_fill_buffer(buf, num_entries, fill_start_value, add_value);
 
     return ERROR_NO_ERROR;
 }
