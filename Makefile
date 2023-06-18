@@ -112,6 +112,7 @@ app: $(AOBJ)
 .PHONY: test
 test:
 	$(Q)$(MAKE) unit_tests --no-print-directory
+	$(Q)$(MAKE) component_tests --no-print-directory
 
 .PHONY: static_analyze
 static_analyze:
@@ -122,6 +123,7 @@ static_analyze:
 memcheck:
 	$(Q)$(MAKE) test --no-print-directory
 	$(Q)$(VALGRIND) $(TUEXEC)
+	$(Q)$(VALGRIND) $(TCEXEC)
 
 .PHONY: regression
 regression:
@@ -151,6 +153,10 @@ unit_tests: $(TUOBJ)
 	$(call print_bin,$(TUEXEC))
 	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TUOBJ) -o $(TUEXEC) $(TLIBS)
 
+.PHONY: component_tests
+component_tests: $(TCOBJ)
+	$(call print_bin,$(TCEXEC))
+	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TCOBJ) -o $(TCEXEC) $(TLIBS)
 
 .PHONY: xanalyze
 xanalyze: CC := clang --analyze -Xanalyzer -analyzer-output=text
