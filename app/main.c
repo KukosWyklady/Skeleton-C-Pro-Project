@@ -17,12 +17,12 @@ int main(void)
     logger_initFileLogger("./log.txt", 0, 0);
     logger_setLevel(LogLevel_DEBUG);
 
-    LOG_TRACE("trace");
-    LOG_DEBUG("degug");
-    LOG_INFO("info");
-    LOG_WARN("warn");
-    LOG_ERROR("error");
-    LOG_FATAL("fatal");
+    LOG_TRACE("trace %s", "");
+    LOG_DEBUG("degug %s", "");
+    LOG_INFO("info %s", "");
+    LOG_WARN("warn %s", "");
+    LOG_ERROR("error %s", "");
+    LOG_FATAL("fatal %s", "");
 
     if (EXPECT(MIN(2, 3), 2))
         printf("EXPECTED 2\n");
