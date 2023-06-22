@@ -19,7 +19,7 @@ if [[ -z "${install_command}" ]]; then
     exit 1
 fi
 
-packages=("gcc" "clang" "make" "valgrind" "clang-tools" "git" "ninja-build" "pkg-config" "gcovr" \
+packages=("gcc" "clang" "make" "valgrind" "kcachegrind" "clang-tools" "git" "ninja-build" "pkg-config" "gcovr" \
           "python3" "python3-pip" "python3-setuptools" "python3-wheel")
 
 for p in ${packages[@]}

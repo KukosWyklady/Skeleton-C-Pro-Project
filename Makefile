@@ -143,7 +143,6 @@ run_tests:
 	$(TUEXEC)
 	$(TCEXEC)
 
-
 .PHONY: test_coverage
 test_coverage:
 	$(Q)$(MAKE) unit_tests_coverage --no-print-directory
@@ -304,3 +303,6 @@ help:
 $(DEPS):
 
 include $(wildcard $(DEPS))
+
+# Does not work because of criterion
+# valgrind --tool=callgrind --cache-sim=yes --branch-sim=yes --simulate-wb=yes --simulate-hwpref=yes --cacheuse=yes ./component_tests.out
