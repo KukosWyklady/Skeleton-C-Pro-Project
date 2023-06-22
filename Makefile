@@ -27,9 +27,12 @@ AWK   := awk
 MKDIR := mkdir -p
 
 # OTHER PROGRAMS
-VALGRIND := valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1
+VALGRIND_MEMCHECK := valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1
+VALGRIND_CACHE := valgrind --tool=cachegrind --branch-sim=yes
+
 TEST_COV := gcov
 TEST_COV_HTML := gcovr -r . --html --html-details
+GPROF := gprof
 
 # DIRS
 SDIR := ./src
@@ -64,6 +67,16 @@ TCEXEC := ./component_tests.out
 
 TU_COV_REPORT := ./unit_tests_coverage.html
 TC_COV_REPORT := ./component_tests_coverage.html
+
+GPROF_BIN := ./gmon.out
+TU_GPROF_REPORT := ./unit_tests_gprof_report.txt
+TC_GPROF_REPORT := ./component_tests_gprof_report.txt
+
+TU_CACHE_BIN := ./unit_tests_cache_bin.out
+TC_CACHE_BIN := ./component_tests_cache_bin.out
+
+TU_CACHE_LOG := ./unit_tests_cache_log.txt
+TC_CACHE_LOG := ./component_tests_cache_log.txt
 
 # COMPI, DEFAULT GCC
 CC ?= gcc
@@ -124,6 +137,13 @@ test:
 	$(Q)$(MAKE) unit_tests --no-print-directory
 	$(Q)$(MAKE) component_tests --no-print-directory
 
+.PHONY: run_tests
+run_tests:
+	$(Q)$(MAKE) test --no-print-directory
+	$(TUEXEC)
+	$(TCEXEC)
+
+
 .PHONY: test_coverage
 test_coverage:
 	$(Q)$(MAKE) unit_tests_coverage --no-print-directory
@@ -137,8 +157,21 @@ static_analyze:
 .PHONY: memcheck
 memcheck:
 	$(Q)$(MAKE) test --no-print-directory
-	$(Q)$(VALGRIND) $(TUEXEC)
-	$(Q)$(VALGRIND) $(TCEXEC)
+	$(Q)$(VALGRIND_MEMCHECK) $(TUEXEC)
+	$(Q)$(VALGRIND_MEMCHECK) $(TCEXEC)
+
+.PHONY: code_profiling
+code_profiling:
+	$(Q)$(MAKE) unit_tests_code_profiling_gprof --no-print-directory
+	$(Q)$(MAKE) component_tests_code_profiling_gprof --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) cache_report --no-print-directory
+
+.PHONY: cache_report
+cache_report:
+	$(Q)$(MAKE) test --no-print-directory
+	$(Q)$(VALGRIND_CACHE) --log-file=$(TU_CACHE_LOG) --cachegrind-out-file=$(TU_CACHE_BIN) $(TUEXEC)
+	$(Q)$(VALGRIND_CACHE) --log-file=$(TC_CACHE_LOG) --cachegrind-out-file=$(TC_CACHE_BIN) $(TCEXEC)
 
 .PHONY: regression
 regression:
@@ -209,6 +242,30 @@ xanalyze: CC := clang --analyze -Xanalyzer -analyzer-output=text
 xanalyze: I_INC += -I$(SDIR)
 xanalyze: $(AOBJ) $(TUOBJ) $(TCOBJ)
 
+.PHONY: unit_tests_code_profiling
+unit_tests_code_profiling_gprof: CC = gcc
+unit_tests_code_profiling_gprof: C_FLAGS = -O0 -ggdb3 -pg $(C_STD)
+unit_tests_code_profiling_gprof: I_INC += -I$(SDIR)
+unit_tests_code_profiling_gprof: LINKER_FLAGS += -Wl,-allow-multiple-definition
+unit_tests_code_profiling_gprof: $(TUOBJ)
+	$(call print_bin,$(TUEXEC))
+	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TUOBJ) -o $(TUEXEC) $(TLIBS)
+	$(call print,"Executing tests")
+	$(Q)$(TUEXEC)
+# $(Q)$(GPROF) $(TUEXEC) $(GPROF_BIN) > $(TU_GPROF_REPORT)
+# $(Q)$(RM) $(GPROF_BIN)
+
+.PHONY: component_tests_code_profiling
+component_tests_code_profiling_gprof: CC = gcc
+component_tests_code_profiling_gprof: C_FLAGS = -O0 -ggdb3 -pg $(C_STD)
+component_tests_code_profiling_gprof: $(TCOBJ)
+	$(call print_bin,$(TCEXEC))
+	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TCOBJ) -o $(TCEXEC) $(TLIBS)
+	$(call print,"Executing tests")
+	$(Q)$(TCEXEC)
+# $(Q)$(GPROF) $(TUEXEC) $(GPROF_BIN) > $(TC_GPROF_REPORT)
+# $(Q)$(RM) $(GPROF_BIN)
+
 .PHONY: clean
 clean:
 	$(call print_rm,EXEC)
@@ -218,7 +275,8 @@ clean:
 	$(call print_rm,DEPS)
 	$(Q)$(RM) $(DEPS)
 	$(call print_rm,REPORTS)
-	$(Q)$(RM) $(TC_COV_REPORT) $(TU_COV_REPORT) *.html
+	$(Q)$(RM) $(TC_COV_REPORT) $(TU_COV_REPORT) *.html sandbox-gmon* $(GPROF_BIN) \
+	          $(TC_CACHE_BIN) $(TC_CACHE_LOG) $(TU_CACHE_BIN) $(TU_CACHE_LOG) $(TC_GPROF_REPORT) $(TU_GPROF_REPORT)
 
 .PHONY: help
 help:
@@ -228,7 +286,8 @@ help:
 	@echo "    all               - alias for make app"
 	@echo "    app               - build only app"
 	@echo "    test              - build only tests"
-	@echo "    regression        - build and run all tests"
+	@echo "    run_tests         - build and runa all tests"
+	@echo "    regression        - build and run all regression tests"
 	@echo "    memcheck          - build tests and run them using valgrind"
 	@echo "    static_analyze    - analyze all source files (tests included)"
 	@echo "    test_coverage     - create html report about test coverage"
