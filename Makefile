@@ -25,7 +25,11 @@ BC    := bc
 GREP  := grep -q
 AWK   := awk
 MKDIR := mkdir -p
+
+# OTHER PROGRAMS
 VALGRIND := valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1
+TEST_COV := gcov
+TEST_COV_HTML := gcovr -r . --html --html-details
 
 # DIRS
 SDIR := ./src
@@ -49,11 +53,17 @@ AOBJ := $(ASRC:%.c=%.o)
 TUOBJ := $(TUSRC:%.c=%.o)
 TCOBJ := $(TCSRC:%.c=%.o)
 
+GCOV_OBJ := $(SOBJ:%.o=%.gcda) $(AOBJ:%.o=%.gcda) $(TUOBJ:%.o=%.gcda) $(TCOBJ:%.o=%.gcda) \
+			$(SOBJ:%.o=%.gcno) $(AOBJ:%.o=%.gcno) $(TUOBJ:%.o=%.gcno) $(TCOBJ:%.o=%.gcno)
+
 DEPS := $(SOBJ:%.o=%.d) $(AOBJ:%.o=%.d) $(TUOBJ:%.o=%.d) $(TCOBJ:%.o=%.d)
 
 AEXEC := ./main.out
 TUEXEC := ./unit_tests.out
 TCEXEC := ./component_tests.out
+
+TU_COV_REPORT := ./unit_tests_coverage.html
+TC_COV_REPORT := ./component_tests_coverage.html
 
 # COMPI, DEFAULT GCC
 CC ?= gcc
@@ -114,6 +124,11 @@ test:
 	$(Q)$(MAKE) unit_tests --no-print-directory
 	$(Q)$(MAKE) component_tests --no-print-directory
 
+.PHONY: test_coverage
+test_coverage:
+	$(Q)$(MAKE) unit_tests_coverage --no-print-directory
+	$(Q)$(MAKE) component_tests_coverage --no-print-directory
+
 .PHONY: static_analyze
 static_analyze:
 	$(Q)$(MAKE) clean --no-print-directory
@@ -141,8 +156,13 @@ regression:
 	$(call print,running tests:)
 	$(Q)$(MAKE) test --no-print-directory
 	$(Q)$(TUEXEC)
+	$(Q)$(TCEXEC)
 	$(call print,running memcheck:)
 	$(Q)$(MAKE) memcheck --no-print-directory
+	$(call print,cleaning:)
+	$(Q)$(MAKE) clean --no-print-directory
+	$(call print,checking test coverage:)
+	$(Q)$(MAKE) test_coverage --no-print-directory
 	$(call print,Regression PASSED)
 
 
@@ -158,6 +178,32 @@ component_tests: $(TCOBJ)
 	$(call print_bin,$(TCEXEC))
 	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TCOBJ) -o $(TCEXEC) $(TLIBS)
 
+.PHONY: unit_tests_coverage
+unit_tests_coverage: CC = gcc
+unit_tests_coverage: C_FLAGS = -O0 -ggdb3 -fprofile-arcs -ftest-coverage $(C_STD)
+unit_tests_coverage: I_INC += -I$(SDIR)
+unit_tests_coverage: LINKER_FLAGS += -Wl,-allow-multiple-definition
+unit_tests_coverage: $(TUOBJ)
+	$(call print_bin,$(TUEXEC))
+	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TUOBJ) -o $(TUEXEC) $(TLIBS)
+	$(call print,"Executing tests")
+	$(Q)$(TUEXEC)
+	$(Q)$(TEST_COV_HTML) -o $(TU_COV_REPORT)
+	$(Q)$(RM) $(GCOV_OBJ)
+
+
+.PHONY: component_tests_coverage
+component_tests_coverage: CC = gcc
+component_tests_coverage: C_FLAGS = -O0 -ggdb3 -fprofile-arcs -ftest-coverage $(C_STD)
+component_tests_coverage: $(TCOBJ)
+	$(call print_bin,$(TCEXEC))
+	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TCOBJ) -o $(TCEXEC) $(TLIBS)
+	$(call print,"Executing tests")
+	$(Q)$(TCEXEC)
+	$(Q)$(TEST_COV_HTML) -o $(TC_COV_REPORT)
+	$(Q)$(RM) $(GCOV_OBJ)
+
+
 .PHONY: xanalyze
 xanalyze: CC := clang --analyze -Xanalyzer -analyzer-output=text
 xanalyze: I_INC += -I$(SDIR)
@@ -168,9 +214,11 @@ clean:
 	$(call print_rm,EXEC)
 	$(Q)$(RM) $(AEXEC) $(TUEXEC) $(TCEXEC)
 	$(call print_rm,OBJ)
-	$(Q)$(RM) $(AOBJ) $(TUOBJ) $(TCOBJ)
+	$(Q)$(RM) $(AOBJ) $(TUOBJ) $(TCOBJ) $(GCOV_OBJ)
 	$(call print_rm,DEPS)
 	$(Q)$(RM) $(DEPS)
+	$(call print_rm,REPORTS)
+	$(Q)$(RM) $(TC_COV_REPORT) $(TU_COV_REPORT) *.html
 
 .PHONY: help
 help:
@@ -183,6 +231,7 @@ help:
 	@echo "    regression        - build and run all tests"
 	@echo "    memcheck          - build tests and run them using valgrind"
 	@echo "    static_analyze    - analyze all source files (tests included)"
+	@echo "    test_coverage     - create html report about test coverage"
 	@echo -e
 	@echo "Makefile supports Verbose mode when V=1 (make all V=1)"
 	@echo "Makefile supports Debug mode when DEBUG=1 (make all DEBUG=1)"
