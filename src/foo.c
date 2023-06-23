@@ -7,7 +7,9 @@
 static void foo_static_fill_buffer(int buf[const], const size_t num_entries, const int start_value, const int add_value)
 {
     for (size_t i = 0; i < num_entries; ++i)
+    {
         buf[i] = start_value + ((int)i * add_value);
+    }
 }
 
 error_t foo_alloc_buffer(const size_t num_entries, int** const out_allocated_buf)

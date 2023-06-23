@@ -25,21 +25,32 @@ int main(void)
     LOG_FATAL("fatal %s", "");
 
     if (EXPECT(MIN(2, 3), 2))
+    {
         printf("EXPECTED 2\n");
+    }
 
     const error_t err = ERROR_INVALID_ARGUMENT;
     if (err == ERROR_INVALID_ARGUMENT)
+    {
         printf("Invalid argument error test\n");
+    }
 
+    enum {buffer_size = 100};
     int* buf;
-    if (foo_alloc_buffer(100, &buf) != ERROR_NO_ERROR)
+    if (foo_alloc_buffer(buffer_size, &buf) != ERROR_NO_ERROR)
+    {
         printf("ERROR\n");
+    }
 
-    if (foo_init_buffer(buf, 100, 1, 2) != ERROR_NO_ERROR)
+    if (foo_init_buffer(buf, buffer_size, 1, 2) != ERROR_NO_ERROR)
+    {
         printf("ERROR\n");
+    }
 
     if (foo_dealloc_buffer(buf) != ERROR_NO_ERROR)
+    {
         printf("ERROR\n");
+    }
 
     return 0;
 }

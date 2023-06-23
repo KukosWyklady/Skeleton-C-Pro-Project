@@ -2,5 +2,6 @@
 
 int bar_magic_number(void)
 {
-    return 41;
+    enum {lucky_euler_last_number = 41};
+    return lucky_euler_last_number;
 }

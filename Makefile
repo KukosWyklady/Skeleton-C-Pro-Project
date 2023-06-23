@@ -34,6 +34,9 @@ TEST_COV := gcov
 TEST_COV_HTML := gcovr -r . --html --html-details
 GPROF := gprof
 
+CLANG_TIDY := clang-tidy --quiet
+CLANG_TIDY_CHECKS := -checks=bugprone-*,clang-analyzer-*,cert-*,concurrency-*,misc-*,modernize-*,performance-*,readability-* --warnings-as-errors=*
+
 # DIRS
 SDIR := ./src
 IDIR := ./include ./libs/c-logger/include/ ./libs/criterion/usr/local/include/
@@ -152,6 +155,7 @@ test_coverage:
 static_analyze:
 	$(Q)$(MAKE) clean --no-print-directory
 	$(Q)$(MAKE) xanalyze --no-print-directory
+	$(Q)$(MAKE) clang_tidy --no-print-directory
 
 .PHONY: memcheck
 memcheck:
@@ -264,6 +268,10 @@ component_tests_code_profiling_gprof: $(TCOBJ)
 	$(Q)$(TCEXEC)
 # $(Q)$(GPROF) $(TUEXEC) $(GPROF_BIN) > $(TC_GPROF_REPORT)
 # $(Q)$(RM) $(GPROF_BIN)
+
+.PHONY:clang_tidy
+clang_tidy:
+	$(CLANG_TIDY) $(CLANG_TIDY_CHECKS) $(ASRC) -- $(I_INC)
 
 .PHONY: clean
 clean:
