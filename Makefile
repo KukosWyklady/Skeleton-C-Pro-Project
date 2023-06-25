@@ -27,7 +27,7 @@ AWK   := awk
 MKDIR := mkdir -p
 
 # OTHER PROGRAMS
-VALGRIND_MEMCHECK := valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1
+VALGRIND_MEMCHECK := valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes --error-exitcode=1
 VALGRIND_CACHE := valgrind --tool=cachegrind --branch-sim=yes
 
 TEST_COV := gcov
@@ -53,16 +53,18 @@ SRC := $(wildcard $(SDIR)/*.c)
 ASRC := $(SRC) $(wildcard $(ADIR)/*.c)
 TUSRC := $(SRC) $(wildcard $(TUDIR)/*.c)
 TCSRC := $(SRC) $(wildcard $(TCDIR)/*.c)
+TMSRC := $(wildcard $(TMDIR)/*.c)
 
 SOBJ := $(SRC:%.c=%.o)
 AOBJ := $(ASRC:%.c=%.o)
 TUOBJ := $(TUSRC:%.c=%.o)
 TCOBJ := $(TCSRC:%.c=%.o)
+TMOBJ := $(TMSRC:%.c=%.o)
 
 GCOV_OBJ := $(SOBJ:%.o=%.gcda) $(AOBJ:%.o=%.gcda) $(TUOBJ:%.o=%.gcda) $(TCOBJ:%.o=%.gcda) \
 			$(SOBJ:%.o=%.gcno) $(AOBJ:%.o=%.gcno) $(TUOBJ:%.o=%.gcno) $(TCOBJ:%.o=%.gcno)
 
-DEPS := $(SOBJ:%.o=%.d) $(AOBJ:%.o=%.d) $(TUOBJ:%.o=%.d) $(TCOBJ:%.o=%.d)
+DEPS := $(SOBJ:%.o=%.d) $(AOBJ:%.o=%.d) $(TUOBJ:%.o=%.d) $(TCOBJ:%.o=%.d) $(TMOBJ:%.o=%.d)
 
 AEXEC := ./main.out
 TUEXEC := ./unit_tests.out
@@ -139,12 +141,14 @@ app: $(AOBJ)
 test:
 	$(Q)$(MAKE) unit_tests --no-print-directory
 	$(Q)$(MAKE) component_tests --no-print-directory
+	$(Q)$(MAKE) mock_tests --no-print-directory
 
 .PHONY: run_tests
 run_tests:
 	$(Q)$(MAKE) test --no-print-directory
 	$(TUEXEC)
 	$(TCEXEC)
+	$(Q)$(MAKE) mock_tests_run --no-print-directory
 
 .PHONY: test_coverage
 test_coverage:
@@ -162,6 +166,7 @@ memcheck:
 	$(Q)$(MAKE) test --no-print-directory
 	$(Q)$(VALGRIND_MEMCHECK) $(TUEXEC)
 	$(Q)$(VALGRIND_MEMCHECK) $(TCEXEC)
+	$(Q)$(MAKE) mock_tests_memcheck --no-print-directory
 
 .PHONY: code_profiling
 code_profiling:
@@ -213,6 +218,25 @@ unit_tests: $(TUOBJ)
 component_tests: $(TCOBJ)
 	$(call print_bin,$(TCEXEC))
 	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TCOBJ) -o $(TCEXEC) $(TLIBS)
+
+######################################
+
+# MOCK: 1 LINE = 1 TEST
+.PHONY: mock_tests
+mock_tests: I_INC += -I$(SDIR)
+mock_tests: $(TMOBJ)
+	$(call print_bin,./mock_tests_foo.out)
+	$(Q)$(CC) $(C_FLAGS) $(I_INC) $(L_INC) $(LINKER_FLAGS) $(TMDIR)/test_foo.o -o ./mock_tests_foo.out $(TLIBS)
+
+.PHONY: mock_tests_run
+mock_tests_run:
+	./mock_tests_foo.out
+
+.PHONY: mock_tests_memcheck
+mock_tests_memcheck:
+	$(Q)$(VALGRIND_MEMCHECK) ./mock_tests_foo.out
+
+######################################
 
 .PHONY: unit_tests_coverage
 unit_tests_coverage: CC = gcc
@@ -276,9 +300,9 @@ clang_tidy:
 .PHONY: clean
 clean:
 	$(call print_rm,EXEC)
-	$(Q)$(RM) $(AEXEC) $(TUEXEC) $(TCEXEC)
+	$(Q)$(RM) $(AEXEC) $(TUEXEC) $(TCEXEC) ./mock_tests*
 	$(call print_rm,OBJ)
-	$(Q)$(RM) $(AOBJ) $(TUOBJ) $(TCOBJ) $(GCOV_OBJ)
+	$(Q)$(RM) $(AOBJ) $(TUOBJ) $(TCOBJ) $(TMOBJ) $(GCOV_OBJ)
 	$(call print_rm,DEPS)
 	$(Q)$(RM) $(DEPS)
 	$(call print_rm,REPORTS)
