@@ -315,6 +315,10 @@ clean:
 	$(Q)$(RM) $(TC_COV_REPORT) $(TU_COV_REPORT) *.html sandbox-gmon* $(GPROF_BIN) \
 	          $(TC_CACHE_BIN) $(TC_CACHE_LOG) $(TU_CACHE_BIN) $(TU_CACHE_LOG) $(TC_GPROF_REPORT) $(TU_GPROF_REPORT)
 
+.PHONY: config
+config:
+	$(Q)$(SCRIPT_DIR)/configure.sh
+
 .PHONY: help
 help:
 	@echo "Makefile"
@@ -328,6 +332,7 @@ help:
 	@echo "    memcheck          - build tests and run them using valgrind"
 	@echo "    static_analyze    - analyze all source files (tests included)"
 	@echo "    test_coverage     - create html report about test coverage"
+	@echo "    config            - run script to install env dependencies"
 	@echo -e
 	@echo "Makefile supports Verbose mode when V=1 (make all V=1)"
 	@echo "Makefile supports Debug mode when DEBUG=1 (make all DEBUG=1)"
