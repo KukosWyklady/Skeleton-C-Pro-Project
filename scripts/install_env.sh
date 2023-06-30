@@ -40,5 +40,6 @@ elif [[ -f "/etc/fedora-release" ]]; then
     sudo dnf install -y libgit2-devel || exit 1
 fi
 
-# Python (pip)
+# Python (pip) global + local (local is needed for github actions)
 sudo pip3 install --prefix=/usr/bin meson || exit 1
+pip3 install --user meson

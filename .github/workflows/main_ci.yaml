@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: build
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        make app
+        make test
+
+  build_debug:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: build
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        make app DEBUG=1
+        make test DEBUG=1
+
+  regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: regression
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        clang-tidy --version
+        make regression
+
+  regression_debug:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: regression
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        make regression DEBUG=1
+
+
+  # memcheck_valgrind:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       compiler: [gcc, clang]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Install valgrind
+  #     run: |
+  #       sudo apt update
+  #       sudo apt install valgrind
+  #   - name: build
+  #     env:
+  #       CC: ${{ matrix.compiler }}
+  #     run: make test
+  #   - name: Run valgrind
+  #     run: make memcheck
+
+
+  # memcheck_valgrind_debug:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       compiler: [gcc, clang]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Install valgrind
+  #     run: |
+  #       sudo apt update
+  #       sudo apt install valgrind
+  #   - name: build
+  #     env:
+  #       CC: ${{ matrix.compiler }}
+  #     run: make test DEBUG=1
+  #   - name: Run valgrind
+  #     run: make memcheck
