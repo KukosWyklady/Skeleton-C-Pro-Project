@@ -105,7 +105,7 @@ ALIBS := $(SLIBS)
 
 ifeq ($(CC),clang)
 	C_WARNS +=  -Weverything -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-newline-eof -Wno-reserved-id-macro \
-				-Wno-missing-variable-declarations
+				-Wno-missing-variable-declarations -Wno-declaration-after-statement
 else ifneq (, $(filter $(CC), cc gcc))
 	C_WARNS += -Wall -Wextra -pedantic -Wcast-align \
 			   -Winit-self -Wlogical-op -Wmissing-include-dirs \
@@ -117,13 +117,13 @@ else ifneq (, $(filter $(CC), cc gcc))
 endif
 
 ifeq ("$(origin DEBUG)", "command line")
-	GGDB := -ggdb3 -gdwarf-4
+	GGDB := -ggdb3
 	C_OPT := -O0
 else
 	GGDB :=
 endif
 
-C_FLAGS += $(C_STD) $(C_OPT) $(GGDB) $(C_WARNS) $(DEP_FLAGS)
+C_FLAGS += $(C_STD) $(C_OPT) $(GGDB) $(C_WARNS) $(DEP_FLAGS) -gdwarf-4
 
 # ARGS (Quiet OR Verbose), type make V=1 to enable verbose mode
 ifeq ("$(origin V)", "command line")
@@ -200,6 +200,8 @@ regression:
 	$(Q)$(MAKE) test --no-print-directory
 	$(call print,analyzing code:)
 	$(Q)$(MAKE) static_analyze --no-print-directory
+	$(call print,cleaning:)
+	$(Q)$(MAKE) clean --no-print-directory
 	$(call print,running tests:)
 	$(Q)$(MAKE) test --no-print-directory
 	$(Q)$(TUEXEC)

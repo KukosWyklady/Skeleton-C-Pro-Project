@@ -13,7 +13,8 @@ source ${script_dir}/logger.sh
 # First install env dependencies
 info "Installing env tools if needed ..."
 ${script_dir}/install_env.sh || error "Env tools installation error"
-${script_dir}/install_clang_tidy.sh || error "Env tools installation error"
+${script_dir}/install_clang_tidy.sh || error "Env tools installation error: clang-tidy"
+${script_dir}/install_valgrind.sh || error "Env tools installation error: valgrind"
 success "Env tools installed"
 
 # Init submodules

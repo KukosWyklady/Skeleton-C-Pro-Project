@@ -52,8 +52,7 @@ jobs:
         CC: ${{ matrix.compiler }}
       run: |
         make config
-        clang-tidy --version
-        make regression
+        make regression V=1
 
   regression_debug:
     strategy:
@@ -68,7 +67,7 @@ jobs:
         CC: ${{ matrix.compiler }}
       run: |
         make config
-        make regression DEBUG=1
+        make regression DEBUG=1 V=1
 
 
   # memcheck_valgrind:
