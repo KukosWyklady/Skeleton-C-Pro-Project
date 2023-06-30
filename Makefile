@@ -37,6 +37,9 @@ GPROF := gprof
 CLANG_TIDY := clang-tidy --quiet
 CLANG_TIDY_CHECKS := -checks=bugprone-*,clang-analyzer-*,cert-*,concurrency-*,misc-*,modernize-*,performance-*,readability-* --warnings-as-errors=*
 
+SCAN_BUILD := scan-build
+SCAN_BUILD_FLAGS := --status-bugs --keep-cc --show-description
+
 # DIRS
 SDIR := ./src
 IDIR := ./include ./libs/c-logger/include/ ./libs/criterion/usr/local/include/
@@ -160,6 +163,9 @@ static_analyze:
 	$(Q)$(MAKE) clean --no-print-directory
 	$(Q)$(MAKE) xanalyze --no-print-directory
 	$(Q)$(MAKE) clang_tidy --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(SCAN_BUILD) $(SCAN_BUILD_FLAGS) $(MAKE) app --no-print-directory
+	$(Q)$(SCAN_BUILD) $(SCAN_BUILD_FLAGS) $(MAKE) test --no-print-directory
 
 .PHONY: memcheck
 memcheck:
