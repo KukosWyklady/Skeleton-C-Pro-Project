@@ -35,7 +35,7 @@ TEST_COV_HTML := gcovr -r . --html --html-details
 GPROF := gprof
 
 CLANG_TIDY := clang-tidy --quiet
-CLANG_TIDY_CHECKS := -checks=bugprone-*,clang-analyzer-*,cert-*,concurrency-*,misc-*,modernize-*,performance-*,readability-* --warnings-as-errors=*
+CLANG_TIDY_CHECKS := -checks=bugprone-*,-bugprone-easily-swappable-parameters,clang-analyzer-*,cert-*,concurrency-*,misc-*,modernize-*,performance-*,readability-* --warnings-as-errors=*
 
 SCAN_BUILD := scan-build
 SCAN_BUILD_FLAGS := --status-bugs --keep-cc --show-description

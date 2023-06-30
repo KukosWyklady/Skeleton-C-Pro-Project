@@ -13,7 +13,7 @@ int main(void)
 
     logger_initConsoleLogger(stdout);
 
-    remove("./log.txt");
+    (void)remove("./log.txt");
     logger_initFileLogger("./log.txt", 0, 0);
     logger_setLevel(LogLevel_DEBUG);
 
