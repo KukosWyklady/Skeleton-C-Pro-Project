@@ -334,6 +334,7 @@ help:
 	@echo "    memcheck          - build tests and run them using valgrind"
 	@echo "    static_analyze    - analyze all source files (tests included)"
 	@echo "    test_coverage     - create html report about test coverage"
+	@echo "    code_profiling    - create reports from profilers"
 	@echo "    config            - run script to install env dependencies"
 	@echo -e
 	@echo "Makefile supports Verbose mode when V=1 (make all V=1)"

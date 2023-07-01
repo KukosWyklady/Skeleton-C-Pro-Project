@@ -1,0 +1,23 @@
+name: TEST_COVERAGE_REPORT
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test_coverage_report:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: run-test-coverage-checker
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        make test_coverage

@@ -39,7 +39,7 @@ jobs:
         make app DEBUG=1
         make test DEBUG=1
 
-  regression:
+  run_test:
     strategy:
       fail-fast: false
       matrix:
@@ -47,14 +47,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: regression
+    - name: run-tests
       env:
         CC: ${{ matrix.compiler }}
       run: |
         make config
-        make regression V=1
+        make run_tests
 
-  regression_debug:
+  run_test_debug:
     strategy:
       fail-fast: false
       matrix:
@@ -62,49 +62,55 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: regression
+    - name: run-tests
       env:
         CC: ${{ matrix.compiler }}
       run: |
         make config
-        make regression DEBUG=1 V=1
+        make app DEBUG=1
+        make run_tests DEBUG=1
 
+  static_analyze:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: static-analyze
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        make static_analyze
 
-  # memcheck_valgrind:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       compiler: [gcc, clang]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Install valgrind
-  #     run: |
-  #       sudo apt update
-  #       sudo apt install valgrind
-  #   - name: build
-  #     env:
-  #       CC: ${{ matrix.compiler }}
-  #     run: make test
-  #   - name: Run valgrind
-  #     run: make memcheck
+  memcheck:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: run-memcheck
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        make memcheck
 
-
-  # memcheck_valgrind_debug:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       compiler: [gcc, clang]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Install valgrind
-  #     run: |
-  #       sudo apt update
-  #       sudo apt install valgrind
-  #   - name: build
-  #     env:
-  #       CC: ${{ matrix.compiler }}
-  #     run: make test DEBUG=1
-  #   - name: Run valgrind
-  #     run: make memcheck
+  memcheck_debug:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: run-memcheck
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        make memcheck DEBUG=1

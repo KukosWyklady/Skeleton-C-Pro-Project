@@ -1,0 +1,23 @@
+name: CODE_PROFILING
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  code_profiling:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: run-profiler
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        make config
+        make code_profiling
