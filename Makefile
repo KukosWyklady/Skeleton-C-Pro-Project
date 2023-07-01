@@ -163,6 +163,7 @@ static_analyze:
 	$(Q)$(MAKE) clean --no-print-directory
 	$(Q)$(MAKE) xanalyze --no-print-directory
 	$(Q)$(MAKE) clang_tidy --no-print-directory
+	$(Q)$(MAKE) clang_sanitizer --no-print-directory
 	$(Q)$(MAKE) clean --no-print-directory
 	$(Q)$(SCAN_BUILD) $(SCAN_BUILD_FLAGS) $(MAKE) app --no-print-directory
 	$(Q)$(SCAN_BUILD) $(SCAN_BUILD_FLAGS) $(MAKE) test --no-print-directory
@@ -277,6 +278,7 @@ xanalyze: CC := clang --analyze -Xanalyzer -analyzer-output=text
 xanalyze: I_INC += -I$(SDIR)
 xanalyze: $(AOBJ) $(TUOBJ) $(TCOBJ)
 
+
 .PHONY: unit_tests_code_profiling
 unit_tests_code_profiling_gprof: CC = gcc
 unit_tests_code_profiling_gprof: C_FLAGS = -O0 -ggdb3 -pg $(C_STD)
@@ -304,6 +306,146 @@ component_tests_code_profiling_gprof: $(TCOBJ)
 .PHONY:clang_tidy
 clang_tidy:
 	$(CLANG_TIDY) $(CLANG_TIDY_CHECKS) $(ASRC) -- $(I_INC)
+
+.PHONY:clang_sanitizer
+clang_sanitizer:
+	$(Q)$(MAKE) sanitizer_unit --no-print-directory
+	$(Q)$(MAKE) sanitizer_component --no-print-directory
+
+.PHONY: sanitizer_unit
+sanitizer_unit:
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_address_unit --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_thread_unit --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_memory_unit --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_ub_unit --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_dataflow_unit --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_controlflow_unit --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_stack_unit --no-print-directory
+
+.PHONY: sanitizer_address_unit
+sanitizer_address_unit: CC := clang
+sanitizer_address_unit: C_FLAGS += -fsanitize=address -g
+sanitizer_address_unit:
+	$(Q)$(MAKE) unit_tests --no-print-directory
+	$(TUEXEC)
+
+
+.PHONY: sanitizer_thread_unit
+sanitizer_thread_unit: CC := clang
+sanitizer_thread_unit: C_FLAGS += -fsanitize=thread -g
+sanitizer_thread_unit:
+	$(Q)$(MAKE) unit_tests --no-print-directory
+	$(TUEXEC)
+
+.PHONY: sanitizer_memory_unit
+sanitizer_memory_unit: CC := clang
+sanitizer_memory_unit: C_FLAGS += -fsanitize=memory -g
+sanitizer_memory_unit:
+	$(Q)$(MAKE) unit_tests --no-print-directory
+	$(TUEXEC)
+
+.PHONY: sanitizer_ub_unit
+sanitizer_ub_unit: CC := clang
+sanitizer_ub_unit: C_FLAGS += -fsanitize=undefined -g
+sanitizer_ub_unit:
+	$(Q)$(MAKE) unit_tests --no-print-directory
+	$(TUEXEC)
+
+.PHONY: sanitizer_dataflow_unit
+sanitizer_dataflow_unit: CC := clang
+sanitizer_dataflow_unit: C_FLAGS += -fsanitize=dataflow -g
+sanitizer_dataflow_unit:
+	$(Q)$(MAKE) unit_tests --no-print-directory
+	$(TUEXEC)
+
+.PHONY: sanitizer_dataflow_unit
+sanitizer_controlflow_unit: CC := clang
+sanitizer_controlflow_unit: C_FLAGS += -fsanitize=cfi -fvisibility=hidden  -g -flto
+sanitizer_controlflow_unit:
+	$(Q)$(MAKE) unit_tests --no-print-directory
+	$(TUEXEC)
+
+.PHONY: sanitizer_stack_unit
+sanitizer_stack_unit: CC := clang
+sanitizer_stack_unit: C_FLAGS += -fsanitize=safe-stack  -g
+sanitizer_stack_unit:
+	$(Q)$(MAKE) unit_tests --no-print-directory
+	$(TUEXEC)
+
+.PHONY: sanitizer_component
+sanitizer_component:
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_address_component --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_thread_component --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_memory_component --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_ub_component --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_dataflow_component --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_controlflow_component --no-print-directory
+	$(Q)$(MAKE) clean --no-print-directory
+	$(Q)$(MAKE) sanitizer_stack_component --no-print-directory
+
+.PHONY: sanitizer_address_component
+sanitizer_address_component: CC := clang
+sanitizer_address_component: C_FLAGS += -fsanitize=address -g
+sanitizer_address_component:
+	$(Q)$(MAKE) component_tests --no-print-directory
+	$(TCEXEC)
+
+
+.PHONY: sanitizer_thread_component
+sanitizer_thread_component: CC := clang
+sanitizer_thread_component: C_FLAGS += -fsanitize=thread -g
+sanitizer_thread_component:
+	$(Q)$(MAKE) component_tests --no-print-directory
+	$(TCEXEC)
+
+.PHONY: sanitizer_memory_component
+sanitizer_memory_component: CC := clang
+sanitizer_memory_component: C_FLAGS += -fsanitize=memory -g
+sanitizer_memory_component:
+	$(Q)$(MAKE) component_tests --no-print-directory
+	$(TCEXEC)
+
+.PHONY: sanitizer_ub_component
+sanitizer_ub_component: CC := clang
+sanitizer_ub_component: C_FLAGS += -fsanitize=undefined -g
+sanitizer_ub_component:
+	$(Q)$(MAKE) component_tests --no-print-directory
+	$(TCEXEC)
+
+.PHONY: sanitizer_dataflow_component
+sanitizer_dataflow_component: CC := clang
+sanitizer_dataflow_component: C_FLAGS += -fsanitize=dataflow -g
+sanitizer_dataflow_component:
+	$(Q)$(MAKE) component_tests --no-print-directory
+	$(TCEXEC)
+
+.PHONY: sanitizer_dataflow_component
+sanitizer_controlflow_component: CC := clang
+sanitizer_controlflow_component: C_FLAGS += -fsanitize=cfi -fvisibility=hidden  -g -flto
+sanitizer_controlflow_component:
+	$(Q)$(MAKE) component_tests --no-print-directory
+	$(TCEXEC)
+
+.PHONY: sanitizer_stack_component
+sanitizer_stack_component: CC := clang
+sanitizer_stack_component: C_FLAGS += -fsanitize=safe-stack  -g
+sanitizer_stack_component:
+	$(Q)$(MAKE) component_tests --no-print-directory
+	$(TCEXEC)
+
 
 .PHONY: clean
 clean:
